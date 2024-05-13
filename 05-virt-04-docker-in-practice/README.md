@@ -1,49 +1,33 @@
-# Домашнее задание к занятию 5. «Практическое применение Docker»
-
-### Инструкция к выполнению
-
-1. Для выполнения заданий обязательно ознакомьтесь с [инструкцией](https://github.com/netology-code/devops-materials/blob/master/cloudwork.MD) по экономии облачных ресурсов. Это нужно, чтобы не расходовать средства, полученные в результате использования промокода.
-3. **Своё решение к задачам оформите в вашем GitHub репозитории.**
-4. В личном кабинете отправьте на проверку ссылку на .md-файл в вашем репозитории.
-5. Сопроводите ответ необходимыми скриншотами.
+# Домашнее задание к занятию 5. «Практическое применение Docker» - Иванов Дмитрий (fops-13)
 
 ---
-## Примечание: Ознакомьтесь со схемой виртуального стенда [по ссылке](https://github.com/netology-code/shvirtd-example-python/blob/main/schema.pdf)
-
----
-
 ## Задача 0
 1. Убедитесь что у вас НЕ(!) установлен ```docker-compose```, для этого получите следующую ошибку от команды ```docker-compose --version```
-```
-Command 'docker-compose' not found, but can be installed with:
+2. Убедитесь что у вас УСТАНОВЛЕН ```docker compose```(без тире) версии не менее v2.24.X, для это выполните команду ```docker compose version``` 
 
-sudo snap install docker          # version 24.0.5, or
-sudo apt  install docker-compose  # version 1.25.0-1
 
-See 'snap info docker' for additional versions.
-```
-В случае наличия установленного в системе ```docker-compose``` - удалите его.  
-2. Убедитесь что у вас УСТАНОВЛЕН ```docker compose```(без тире) версии не менее v2.24.X, для это выполните команду ```docker compose version```  
-###  **Своё решение к задачам оформите в вашем GitHub репозитории!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**
-
+## Решение задачи 0
+<img src="img/docker_version.png">
 ---
+
 
 ## Задача 1
 1. Сделайте в своем github пространстве fork репозитория ```https://github.com/netology-code/shvirtd-example-python/blob/main/README.md```.   
 2. Создайте файл с именем ```Dockerfile.python``` для сборки данного проекта(для 3 задания изучите https://docs.docker.com/compose/compose-file/build/ ). Используйте базовый образ ```python:3.9-slim```. Протестируйте корректность сборки. Не забудьте dockerignore. 
-3. (Необязательная часть, *) Изучите инструкцию в проекте и запустите web-приложение без использования docker в venv. (Mysql БД можно запустить в docker run).
-4. (Необязательная часть, *) По образцу предоставленного python кода внесите в него исправление для управления названием используемой таблицы через ENV переменную.
----
-### ВНИМАНИЕ!
-!!! В процессе последующего выполнения ДЗ НЕ изменяйте содержимое файлов в fork-репозитории! Ваша задача ДОБАВИТЬ 5 файлов: ```Dockerfile.python```, ```compose.yaml```, ```.gitignore```, ```.dockerignore```,```bash-скрипт```. Если вам понадобилось внести иные изменения в проект - вы что-то делаете неверно!
+
+
+
+## Решение задачи 1
+
+```
+root@ubuntu-2004:/home/dmlorren/docker# docker build -t my-app . -f /home/dmlorren/docker/Dockerfile.python 
+```
+<img src="img/docker_build.png">
+
+<a href="https://github.com/dmlorren/shvirtd-example-python">Ссылка на репозиторий в котором выполнялось ДЗ</a>
+
 ---
 
-## Задача 2 (*)
-1. Создайте в yandex cloud container registry с именем "test" с помощью "yc tool" . [Инструкция](https://cloud.yandex.ru/ru/docs/container-registry/quickstart/?from=int-console-help)
-2. Настройте аутентификацию вашего локального docker в yandex container registry.
-3. Соберите и залейте в него образ с python приложением из задания №1.
-4. Просканируйте образ на уязвимости.
-5. В качестве ответа приложите отчет сканирования.
 
 ## Задача 3
 1. Изучите файл "proxy.yaml"
@@ -61,6 +45,13 @@ See 'snap info docker' for additional versions.
 
 6. Остановите проект. В качестве ответа приложите скриншот sql-запроса.
 
+
+## Решение задачи 3
+
+<img src="img/docker_mysql.png">
+
+---
+
 ## Задача 4
 1. Запустите в Yandex Cloud ВМ (вам хватит 2 Гб Ram).
 2. Подключитесь к Вм по ssh и установите docker.
@@ -69,24 +60,117 @@ See 'snap info docker' for additional versions.
 5. (Необязательная часть) Дополнительно настройте remote ssh context к вашему серверу. Отобразите список контекстов и результат удаленного выполнения ```docker ps -a```
 6. В качестве ответа повторите  sql-запрос и приложите скриншот с данного сервера, bash-скрипт и ссылку на fork-репозиторий.
 
-## Задача 5 (*)
-1. Напишите и задеплойте на вашу облачную ВМ bash скрипт, который произведет резервное копирование БД mysql в директорию "/opt/backup" с помощью запуска в сети "backend" контейнера из образа ```schnitzler/mysqldump``` при помощи ```docker run ...``` команды. Подсказка: "документация образа."
-2. Протестируйте ручной запуск
-3. Настройте выполнение скрипта раз в 1 минуту через cron, crontab или systemctl timer. Придумайте способ не светить логин/пароль в git!!
-4. Предоставьте скрипт, cron-task и скриншот с несколькими резервными копиями в "/opt/backup"
+
+## Решение задачи 4
+1. В облаке яндекса развёрнута vm ubunty 20.04
+2. Написан bash-скрипт:
+
+dmlorren@ubunty2004:~$ cat download_repo.sh 
+```bash
+#! /bin/bash
+
+cd /opt
+git clone https://github.com/dmlorren/shvirtd-example-python.git
+cd shvirtd-example-python/
+
+sudo docker compose -f compose.yaml -f proxy.yaml up -d
+```
+
+<img src="img/yandex_docker1.png">
+<img src="img/yandex_docker2.png">
+
+```
+В данном задании я столкнулся с проблемой перезапуска контейнеров web и db в виртуальной машине yandex cloud.
+На stackoverflow и других ресурсах обозначили, что проблема может заключаться в совместимости ubunty 20.04 и mysql:8 
+Попробовал запустить с mariaDB - всё запустилось.
+```
+<img src="img/docker_ps.png">
+<img src="img/check_host.png">
+<img src="img/mariadb.png">
+
+---
 
 ## Задача 6
 Скачайте docker образ ```hashicorp/terraform:latest``` и скопируйте бинарный файл ```/bin/terraform``` на свою локальную машину, используя dive и docker save.
 Предоставьте скриншоты  действий .
 
+
+## Решение задачи 6
+
+1. Ставим dive по инструкции из: https://github.com/wagoodman/dive
+```
+sudo snap install docker
+sudo snap install dive
+sudo snap connect dive:docker-executables docker:docker-executables
+sudo snap connect dive:docker-daemon docker:docker-daemon
+```
+
+2. Посмотрим слои образа через dive:
+```
+root@ubuntu-2004:/home/dmlorren/docker# dive hashicorp/terraform:latest
+```
+<img src="img/dive.png">
+
+
+3. Сохраняем докер образ на локальную машину с помощью docker save:
+```
+root@ubuntu-2004:/home/dmlorren/docker# docker save hashicorp/terraform:latest -o /opt/myapp.tar
+```
+
+4. Через mc захожу в архив, выбираю нужный слой и копирую к себе на локальную машину в директорию home.
+<img src="img/bin.png">
+
+---
+
 ## Задача 6.1
 Добейтесь аналогичного результата, используя docker cp.  
 Предоставьте скриншоты  действий .
 
-## Задача 6.2 (**)
-Предложите способ извлечь файл из контейнера, используя только команду docker build и любой Dockerfile.  
-Предоставьте скриншоты  действий .
+## Решение задачи 6.1
 
-## Задача 7 (***)
-Запустите ваше python-приложение с помощью runC, не используя docker или containerd.  
-Предоставьте скриншоты  действий .
+1. Здесь как минимум нужно собрать контейнер на основе образа (не обязательно запускать) для проведение каких-либо операций с ним:
+
+Выполняем:
+```
+docker create --name my_container_dmlorren hashicorp/terraform:latest
+docker cp 540cb6a28e112f1de87325310c6e82d15d43e7eb9dee7621fa9cadf9ec93b3aa:/bin/terraform /opt/
+```
+
+<img src="img/docker_cp.png">
+
+---
+
+### README.md по умолчанию
+
+# shvirtd-example-python
+
+Example Flask-application for docker compose training.
+## Installation
+First, you need to clone this repository:
+
+```bash
+git clone https://github.com/netology-code/shvirtd-example-python.git
+```
+
+Now, we will need to create a virtual environment and install all the dependencies:
+
+```bash
+python3 -m venv venv  # on Windows, use "python -m venv venv" instead
+. venv/bin/activate   # on Windows, use "venv\Scripts\activate" instead
+pip install -r requirements.txt
+python main.py
+```
+You need to run Mysql database and provide following ENV-variables for connection:  
+- DB_HOST (default: '127.0.0.1')
+- DB_USER (default: 'app')
+- DB_PASSWORD (default: 'very_strong')
+- DB_NAME (default: 'example')
+
+The applications will always running on http://localhost:5000.  
+To exit venv just type ```deactivate```
+
+## License
+
+This project is licensed under the MIT License (see the `LICENSE` file for details).
+
+---

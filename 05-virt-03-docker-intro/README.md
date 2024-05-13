@@ -31,7 +31,7 @@ Hey, Netology
 
 ## Решение задачи 1
 
-<img src="img/nginx_images.png">
+<img src="img/nginx_image.png">
 <img src="img/dockerfile.png">
 
 1. При нахождении в папке с Dockerfile собираем docker-образ из этого же самого Docker-файла:
@@ -56,8 +56,8 @@ root@ubuntu-2004:/home/dmlorren/docker_intro# docker push dmlorren/custom-nginx:
 ссылка на репозиторий docker hub:
 https://hub.docker.com/repository/docker/dmlorren/custom-nginx/general
 
----
 
+---
 
 
 ## Задача 2
@@ -87,7 +87,7 @@ exec /opt/bitnami/scripts/nginx/entrypoint.sh: exec format error
 эксперименты:
 <img src="img/buildx.png">
 
-Рабочая версия:
+- Рабочая версия (после переезда в винду):
 ```
 docker build --tag dmlorren/custom-nginx:v.1.0.2 -f Dockerfile .
 docker push dmlorren/custom-nginx:v.1.0.2

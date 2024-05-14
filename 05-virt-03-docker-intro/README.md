@@ -80,9 +80,11 @@ https://hub.docker.com/repository/docker/dmlorren/custom-nginx/general
 exec /opt/bitnami/scripts/nginx/entrypoint.sh: exec format error
 ```
 
-1. Cобственно я запускаю контейнер для amd64 в архитектуре arm, так как работаю на mac m1 с гипервизором vmware fusion и в нём стоит убунта arm64. С помощью stackoverflow познакомился с таким понятием как сборщик, отобразил это на скриншотах. Собрал новую мультиплатформенную сборку по тегом v.1.0.1 и спустя двое полноценных суток так и не смог нормально запустить контейнер. В виду того, что время горит, мигрировал с макбука на свой основной компьютер по windows и взял образ убунты amd64.
+```text
+1. Cобственно я запускаю контейнер для amd64 в архитектуре arm, так как работаю на mac m1 с гипервизором vmware fusion и в нём стоит убунта arm64. С помощью stackoverflow познакомился с таким понятием как сборщик, отобразил это на скриншотах. Собрал новую мультиплатформенную сборку по тегом v.1.0.1 и спустя двое полноценных суток так и не смог нормально запустить контейнер. В виду того, что время горит, мигрировал с макбука на свой основной компьютер под windows и взял образ убунты amd64.
 
 2. После переезда в архитектуру amd64 новая проблема стала заключаться в следующем в vm и с поднятым докер контейнером не отрабатывает команда curl и возвращает 56 ошибку с отказом подключения. Помогло вот что, я когда в искал образ nginx с конкретной версией,то не нашёл глазами его в докер хабе и взял образ в репозитории bitnami, возможно проблема была именно в этом.. решил отредактировать Dockerfile,чтобы остался оригинальный nginx, после всё пересобрал и запустил - помогло.
+```
 
 эксперименты:
 <img src="img/buildx.png">
@@ -117,6 +119,48 @@ docker run -d -p 127.0.0.1:8080:80 --name Ivanov-custom-nginx-t2 docker.io/dmlor
 
 В качестве ответа приложите скриншоты консоли, где видно все введенные команды и их вывод.
 
+
+## Решение задачи 3
+
+С помощью "docker attach" подключаемся к запущенному контейнеру и взаимодействуем с его стандартным вводом/выводом.
+
+```
+docker attach eeda9de805ed
+docker ps -a
+docker start eeda9de805ed
+docker exec -it eeda9de805ed bash
+```
+<img src="img/docker_sigint.png">
+
+```text
+  Через CTRL-С мы отправляем SIGINT (2) сигнал прерывания, тем самым останавливаем контейнер.
+```
+
+Ставим midnight commander:
+<img src="img/apt_install.png">
+
+Подключаемся к запущенному контейнеру, отправляем SIG, запускаем по новой, подключаемся с оболочкой bash:
+<img src="img/docker_attach.png">
+
+Редактируем "/etc/nginx/conf.d/default.conf", меняем порт, выполняем curl:
+<img src="img/mcedit.png">
+<img src="img/nginx_reload.png">
+
+Анализируем проблему:
+<img src="img/failure.png">
+
+```text
+Мы когда запускали контейнер, то сделали фиксированный проброс портов, с 8080 хоста (моя виртуалка) стучимся на 80 порт контейнера (а точнее сервиса который там запущен). А так как в предыдущем упражнении мы поменяли порт веб сервера nginx с 80 на 81, то соотвестветвенно curl не проходит, так как указанная при запуске мапа 8080 -> 80 сейчас не работает.
+```
+
+Удаляем контейнер без предварительной его остановки через docker rm -f:
+```
+docker rm -f eeda9de805ed
+```
+
+
+---
+
 ## Задача 4
 
 
@@ -126,8 +170,36 @@ docker run -d -p 127.0.0.1:8080:80 --name Ivanov-custom-nginx-t2 docker.io/dmlor
 - Добавьте ещё один файл в текущий каталог ```$(pwd)``` на хостовой машине.
 - Подключитесь во второй контейнер и отобразите листинг и содержание файлов в ```/data``` контейнера.
 
-
 В качестве ответа приложите скриншоты консоли, где видно все введенные команды и их вывод.
+
+
+
+## Решение задачи 4
+
+```
+docker run -d -v $(pwd):/data centos:7 tail -f /dev/null
+docker run -d -v $(pwd):/data debian:11 tail -f /dev/null
+docker exec -it e045acc2a6aa bash
+echo "hello world" > /data/file_centos
+docker exec -it b1d7b4a8f68a bash
+echo "hello Netology" > /data/file_debian
+echo "Hello My Hosts" > file_ubunty
+docker exec -it b1d7b4a8f68a bash
+ls -la /data/
+```
+
+Комментарий:
+```text
+-v $(pwd):/data: это запись флаг для монтирования тома, а именно:
+-v: указывает Docker, что нужно смонтировать том;
+$(pwd): переменная, возвращающая текущий рабочий каталог на хосте;
+/data: точка монтирования внутри контейнера, т.е. текущий рабочий каталог на хосте будет доступен внутри контейнера по пути /data.
+
+
+Для того чтобы контейнер не падал сразу, нужно, чтобы внутри крутилась какая-либо служба (в прошлом задании это был nginx) здесь я просто указал "tail -f /dev/null" таким образом получаем, что процесс чтения пустого файла никогда не завершится.
+```
+<img src="img/part1.png">
+<img src="img/part2.png">
 
 
 ## Задача 5
@@ -178,6 +250,70 @@ services:
 7. Удалите любой из манифестов компоуза(например compose.yaml).  Выполните команду "docker compose up -d". Прочитайте warning, объясните суть предупреждения и выполните предложенное действие. Погасите compose-проект ОДНОЙ(обязательно!!) командой.
 
 В качестве ответа приложите скриншоты консоли, где видно все введенные команды и их вывод, файл compose.yaml , скриншот portainer c задеплоенным компоузом.
+
+
+
+## Решение задачи 5
+
+<img src="img/ex5.png">
+
+```text
+Compose also supports docker-compose.yaml and docker-compose.yml for backwards compatibility of earlier versions. If both files exist, Compose prefers the canonical compose.yaml.
+
+Поддерживается обратная совместимость, но по умолчанию используется compose.yaml.
+```
+Отредактируем наш файл:
+root@ubunty2204:/tmp/netology/docker/task5# cat compose.yaml 
+
+```yaml
+version: "3"
+include:
+  - docker-compose.yaml
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    network_mode: host
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+```
+
+```text
+Через include мы подтянем все ресурсы указанные в "docker-compose.yaml", вообще подтягивание других (при их наличии) compose файлов через include позволяет повторно использовать ресурсы, упростить управление и совместное использование и упростить общую организацию compose файла, если он очень ресурсоёмкий, так как часть настроек по использованию ресурсов будет вынесена в другой файл. 
+```
+
+<img src="img/ex5_1.png">
+
+```
+docker pull dmlorren/custom-nginx:v.1.0.2
+docker tag dmlorren/custom-nginx:v.1.0.2 localhost:5000/custom-nginx:latest
+docker push localhost:5000/custom-nginx:latest
+```
+
+<img src="img/ex5_2.png">
+
+Ставим графику:
+```
+sudo apt install ubuntu-desktop
+sudo apt install lightdm
+sudo service lightdm start
+```
+
+Выполняем необходимые процедуры:
+
+<img src="img/port1.png">
+<img src="img/port2.png">
+<img src="img/port3.png">
+<img src="img/port4.png">
+<img src="img/port5.png">
+<img src="img/port6.png">
+<img src="img/port7.png">
+
+```text
+Нашлись потерянные контейнеры можено запустить эту команду с флагом --remove-orphans, чтобы всё подчистить.
+```
 
 ---
 

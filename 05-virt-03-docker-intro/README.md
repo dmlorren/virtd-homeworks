@@ -305,7 +305,7 @@ sudo service lightdm start
 
 <img src="img/port1.png">
 <img src="img/port2.png">
-<img src="img/port3.png">
+<img src="img/port33.png">
 <img src="img/port4.png">
 <img src="img/port5.png">
 <img src="img/port6.png">
